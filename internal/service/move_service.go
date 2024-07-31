@@ -1,17 +1,25 @@
-package services
+package service
 
 import (
-	"cinema/internal/models"
-	"cinema/internal/repositories"
+	"cinema/internal/model"
+	"cinema/internal/repository"
 	"errors"
 	"fmt"
 	"log"
 	"time"
 )
 
+// MovieServiceInterface визначає інтерфейс для служби фільмів
+type MovieServiceInterface interface {
+	GetAvailableMovies() []model.Movie
+	PlaceOrder(req OrderRequest) (string, error)
+	GetOrders() []model.Order
+}
+
 // MovieService структура для служби фільмів
 type MovieService struct {
-	repo *repositories.MovieRepository
+	repo         *repository.MovieRepository
+	emailService EmailServiceInterface
 }
 
 // OrderRequest структура для запиту замовлення
@@ -20,12 +28,12 @@ type OrderRequest struct {
 }
 
 // NewMovieService створює новий екземпляр MovieService
-func NewMovieService(repo *repositories.MovieRepository) *MovieService {
-	return &MovieService{repo: repo}
+func NewMovieService(repo *repository.MovieRepository, emailService EmailServiceInterface) *MovieService {
+	return &MovieService{repo: repo, emailService: emailService}
 }
 
 // GetAvailableMovies повертає список доступних фільмів
-func (s *MovieService) GetAvailableMovies() []models.Movie {
+func (s *MovieService) GetAvailableMovies() []model.Movie {
 	return s.repo.GetAvailableMovies()
 }
 
@@ -36,19 +44,19 @@ func (s *MovieService) PlaceOrder(req OrderRequest) (string, error) {
 	}
 
 	orderID := generateOrderID()
-	order := models.Order{
+	order := model.Order{
 		ID:         orderID,
 		MovieTitle: req.MovieTitle,
 		Status:     "Ordered",
 		OrderedAt:  time.Now(),
 	}
 	s.repo.PlaceOrder(order)
-	logOrderEmail(orderID)
+	s.emailService.SendOrderEmail(orderID)
 	return orderID, nil
 }
 
 // GetOrders повертає список замовлених фільмів
-func (s *MovieService) GetOrders() []models.Order {
+func (s *MovieService) GetOrders() []model.Order {
 	return s.repo.GetOrders()
 }
 
@@ -56,9 +64,3 @@ func (s *MovieService) GetOrders() []models.Order {
 func generateOrderID() string {
 	return fmt.Sprintf("%d", time.Now().UnixNano())
 }
-
-// logOrderEmail логує відправку email після замовлення фільма
-func logOrderEmail(orderID string) {
-	log.Printf("Sent confirmation email for order ID: %s", orderID)
-}
-
