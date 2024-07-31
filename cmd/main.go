@@ -1,9 +1,9 @@
 package main
 
 import (
-	"cinema/internal/controllers"
-	"cinema/internal/repositories"
-	"cinema/internal/servises"
+	"cinema/internal/controller"
+	"cinema/internal/repository"
+	"cinema/internal/service"
 	"fmt"
 	"net/http"
 	"os"
@@ -21,26 +21,27 @@ func main() {
 	logger.Out = os.Stdout
 
 	// Ініціалізація репозиторіїв
-	repo := repositories.NewMovieRepository()
+	repo := repository.NewMovieRepository()
 
 	// Ініціалізація служб
-	service := services.NewMovieService(repo)
+	emailService := service.NewEmailService()
+	svc := service.NewMovieService(repo, emailService)
 
 	// Ініціалізація контролера
-	controller := controllers.NewMovieController(service)
+	ctrl := controller.NewMovieController(svc)
 
 	// Ініціалізація роутера
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
 	// Роут для отримання списку доступних фільмів
-	r.Get("/movies", controller.ListMovies)
+	r.Get("/movies", ctrl.ListMovies)
 
 	// Роут для замовлення квитків
-	r.Post("/order", controller.OrderMovie)
+	r.Post("/order", ctrl.OrderMovie)
 
 	// Роут для отримання списку замовлених квитків
-	r.Get("/orders", controller.ListOrders)
+	r.Get("/orders", ctrl.ListOrders)
 
 	// Запуск сервера на динамічному порту
 	port := os.Getenv("PORT")
@@ -52,4 +53,3 @@ func main() {
 		logger.Fatal("Failed to start server:", err)
 	}
 }
-
