@@ -1,10 +1,21 @@
-package utils
+package service
 
 import "log"
 
-// SendEmail симулює відправку email
-func SendEmail(orderID string) {
-	// Для реальної реалізації замініть цю функцію на код для відправки email
-	log.Printf("Email sent for order ID: %s", orderID)
+// EmailServiceInterface визначає інтерфейс для служби відправки email
+type EmailServiceInterface interface {
+	SendOrderEmail(orderID string)
 }
 
+// EmailService структура для служби відправки email
+type EmailService struct{}
+
+// NewEmailService створює новий екземпляр EmailService
+func NewEmailService() *EmailService {
+	return &EmailService{}
+}
+
+// SendOrderEmail симулює відправку email після замовлення фільму
+func (s *EmailService) SendOrderEmail(orderID string) {
+	log.Printf("Email sent for order ID: %s", orderID)
+}
