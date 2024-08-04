@@ -5,16 +5,8 @@ import (
 	"cinema/internal/repository"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 )
-
-// MovieServiceInterface визначає інтерфейс для служби фільмів
-type MovieServiceInterface interface {
-	GetAvailableMovies() []model.Movie
-	PlaceOrder(req OrderRequest) (string, error)
-	GetOrders() []model.Order
-}
 
 // MovieService структура для служби фільмів
 type MovieService struct {
