@@ -8,14 +8,12 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	fmt.Println("Cinema API running")
-
 	// Ініціалізація логгера
 	logger := logrus.New()
 	logger.Out = os.Stdout
@@ -24,24 +22,24 @@ func main() {
 	repo := repository.NewMovieRepository()
 
 	// Ініціалізація служб
-	emailService := service.NewEmailService()
-	svc := service.NewMovieService(repo, emailService)
+	emailService := &service.EmailService{} // ваш реальний сервіс
+	movieService := service.NewMovieService(repo, emailService)
 
 	// Ініціалізація контролера
-	ctrl := controller.NewMovieController(svc)
+	controller := controller.NewMovieController(movieService)
 
 	// Ініціалізація роутера
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
 	// Роут для отримання списку доступних фільмів
-	r.Get("/movies", ctrl.ListMovies)
+	r.Get("/movies", controller.ListMovies)
 
 	// Роут для замовлення квитків
-	r.Post("/order", ctrl.OrderMovie)
+	r.Post("/order", controller.OrderMovie)
 
 	// Роут для отримання списку замовлених квитків
-	r.Get("/orders", ctrl.ListOrders)
+	r.Get("/orders", controller.ListOrders)
 
 	// Запуск сервера на динамічному порту
 	port := os.Getenv("PORT")
