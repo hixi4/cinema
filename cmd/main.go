@@ -22,7 +22,7 @@ func main() {
 	repo := repository.NewMovieRepository()
 
 	// Ініціалізація служб
-	emailService := &service.EmailService{} // ваш реальний сервіс
+	emailService := &service.EmailService{} 
 	movieService := service.NewMovieService(repo, emailService)
 
 	// Ініціалізація контролера
